@@ -1,35 +1,29 @@
 #include <Arduino.h>
 
 #define PIN_ECHO 17
-#define PIN_TRIG 16
+#define PIN_TRIGGER 16
 
 void setup()
 {
     Serial.begin(115200);
-    while (!Serial);
 
-
-    pinMode(PIN_TRIG, OUTPUT);
+    pinMode(PIN_TRIGGER, OUTPUT);
     pinMode(PIN_ECHO, INPUT_PULLUP);
 }
 
-double last_distance = 0;
+float distance; 
 
 void loop()
 {
-    digitalWrite(PIN_TRIG, HIGH); 
+    digitalWrite(PIN_TRIGGER, HIGH); 
     delayMicroseconds(10); 
-    //delay(500);
-    digitalWrite(PIN_TRIG, LOW); 
+    digitalWrite(PIN_TRIGGER, LOW); 
 
-    int duration = pulseIn(PIN_ECHO, HIGH, 8000);
+    float duration = pulseIn(PIN_ECHO, HIGH);
 
-    printf("duration=%d\n", duration);
+    distance = duration * 0.0344 / 2;
 
-    last_distance = duration * 0.0344 / 2;
-    //last_distance = (last_distance / max_distance) * 100;
-
-    printf("distance: %lf\n", last_distance);
+    printf("distance: %f\n", distance);
     
     delay(300);
 }
