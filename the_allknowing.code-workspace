@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name": "ir_tracker",
+			"path": "firmware/ir_tracker"
+		}
+	],
+	"settings": {}
+}
