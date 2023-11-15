@@ -6,10 +6,19 @@ www.elektron.work
 */
 
 #include <Arduino.h>
-#include <ESPAsyncWebServer.h>
+#include <WiFi.h>
+
+#include "connection.hpp"
+
 
 #define PIN_ECHO 17
 #define PIN_TRIGGER 16
+
+#define SETUP_HTL
+#include "secrets.h"
+#define SERVER_URL "ws://" SERVER_IP "/sensor" 
+
+Connection con;
 
 void setup()
 {
@@ -18,12 +27,32 @@ void setup()
     pinMode(PIN_TRIGGER, OUTPUT);
     pinMode(PIN_ECHO, INPUT_PULLUP);
 
+    WiFi.begin(WIFI_SSID, WIFI_PSK);
+
+    printf("Connecting.");
+
+    while (!WiFi.isConnected())
+    {
+        delay(1000);
+        printf(".");
+    }
+
+    printf("\nWiFi connected!\n");
+
+    con.connect(SERVER_URL);
+
+    con.run();
 }
 
 float distance; 
 
 void loop()
 {
+    con.report(45);
+
+    delay(700);
+
+    return;
     digitalWrite(PIN_TRIGGER, HIGH); 
     delayMicroseconds(10); 
     digitalWrite(PIN_TRIGGER, LOW); 

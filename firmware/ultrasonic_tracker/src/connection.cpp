@@ -2,165 +2,81 @@
 ELEKTRON © 2023 - now
 Written by melektron
 www.elektron.work
-08.11.23, 16:32
+15.11.23, 14:08
+
+implementation of the server connection
 */
 
-/*********
-  Rui Santos
-  Complete instructions at https://RandomNerdTutorials.com/esp32-websocket-server-sensor/
+#include <functional>
 
-  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files.
-  The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*********/
+#include "connection.hpp"
 
-#include <Arduino.h>
-#include <WiFi.h>
-#include <AsyncTCP.h>
-#include <ESPAsyncWebServer.h>
-#include "SPIFFS.h"
-#include <Arduino_JSON.h>
+namespace pl = std::placeholders;
 
-// Replace with your network credentials
-const char *ssid = "REPLACE_WITH_YOUR_SSID";
-const char *password = "REPLACE_WITH_YOUR_PASSWORD";
-
-// Create AsyncWebServer object on port 80
-AsyncWebServer server(80);
-
-// Create a WebSocket object
-AsyncWebSocket ws("/ws");
-
-// Json Variable to Hold Sensor Readings
-JSONVar readings;
-
-// Timer variables
-unsigned long lastTime = 0;
-unsigned long timerDelay = 30000;
-
-// Create a sensor object
-Adafruit_BME280 bme;
-
-// Init BME280
-void initBME()
+Connection::Connection()
 {
-    if (!bme.begin(0x76))
-    {
-        Serial.println("Could not find a valid BME280 sensor, check wiring!");
-        while (1);
+    wsclient.onMessage(std::bind(&Connection::onMessage, this, pl::_1));
+    wsclient.onEvent(std::bind(&Connection::onEvent, this, pl::_1, pl::_2));
+}
+
+void Connection::onMessage(ws::WebsocketsMessage _msg)
+{
+    printf("Got Message: %s\n", _msg.c_str());
+}
+
+void Connection::onEvent(ws::WebsocketsEvent _evt, String _data)
+{
+    if(_evt == ws::WebsocketsEvent::ConnectionOpened) {
+        printf("WS Connnection Opened\n");
+        is_connected = true;
+        // send MAC address
+        char buffer[101] = {0};
+        snprintf(buffer, 100, "{\"type\":\"mac\", \"mac\":%llu}", ESP.getEfuseMac());
+        wsclient.send(buffer);
+
+    } else if(_evt == ws::WebsocketsEvent::ConnectionClosed) {
+        printf("WS Connnection Closed\n");
+        is_connected = false;
+    } else if(_evt == ws::WebsocketsEvent::GotPing) {
+        printf("WS Got a Ping!\n");
+    } else if(_evt == ws::WebsocketsEvent::GotPong) {
+        printf("WS Got a Pong!\n");
     }
 }
 
-// Get Sensor Readings and return JSON object
-String getSensorReadings()
+void Connection::connect(const char *_url)
 {
-    readings["temperature"] = String(bme.readTemperature());
-    readings["humidity"] = String(bme.readHumidity());
-    readings["pressure"] = String(bme.readPressure() / 100.0F);
-    String jsonString = JSON.stringify(readings);
-    return jsonString;
+    wsclient.connect(_url);
 }
 
-// Initialize SPIFFS
-void initSPIFFS()
+void Connection::report(uint8_t _distance)
 {
-    if (!SPIFFS.begin(true))
+    if (is_connected)
     {
-        Serial.println("An error has occurred while mounting SPIFFS");
-    }
-    Serial.println("SPIFFS mounted successfully");
-}
-
-// Initialize WiFi
-void initWiFi()
-{
-    WiFi.mode(WIFI_STA);
-    WiFi.begin(ssid, password);
-    Serial.print("Connecting to WiFi ..");
-    while (WiFi.status() != WL_CONNECTED)
-    {
-        Serial.print('.');
-        delay(1000);
-    }
-    Serial.println(WiFi.localIP());
-}
-
-void notifyClients(String sensorReadings)
-{
-    ws.textAll(sensorReadings);
-}
-
-void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
-{
-    AwsFrameInfo *info = (AwsFrameInfo *)arg;
-    if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT)
-    {
-//data[len] = 0;
-//String message = (char*)data;
-// Check if the message is "getReadings"
-//if (strcmp((char*)data, "getReadings") == 0) {
-  //if it is, send current sensor readings
-        String sensorReadings = getSensorReadings();
-        Serial.print(sensorReadings);
-        notifyClients(sensorReadings);
-      //}
+        char buffer[101] = {0};
+        snprintf(buffer, 100, "{\"type\":\"dist\", \"dist\":%hhu}", _distance);
+        wsclient.send(buffer);
     }
 }
 
-void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len)
+void Connection::run()
 {
-    switch (type)
-    {
-    case WS_EVT_CONNECT:
-        Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
-        break;
-    case WS_EVT_DISCONNECT:
-        Serial.printf("WebSocket client #%u disconnected\n", client->id());
-        break;
-    case WS_EVT_DATA:
-        handleWebSocketMessage(arg, data, len);
-        break;
-    case WS_EVT_PONG:
-    case WS_EVT_ERROR:
-        break;
-    }
-}
+    xTaskCreate(
+        [](void *_arg){
+            for (;;)
+            {
+                Connection *_this = static_cast<Connection*>(_arg);
+                _this->wsclient.poll();
+                delay(10);
+            }
 
-void initWebSocket()
-{
-    ws.onEvent(onEvent);
-    server.addHandler(&ws);
-}
-
-void setup()
-{
-    Serial.begin(115200);
-    initBME();
-    initWiFi();
-    initSPIFFS();
-    initWebSocket();
-
-    // Web Server Root URL
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(SPIFFS, "/index.html", "text/html");
-    });
-
-    server.serveStatic("/", SPIFFS, "/");
-
-    // Start server
-    server.begin();
-}
-
-void loop()
-{
-    if ((millis() - lastTime) > timerDelay)
-    {
-        String sensorReadings = getSensorReadings();
-        Serial.print(sensorReadings);
-        notifyClients(sensorReadings);
-
-        lastTime = millis();
-
-    }
-
-    ws.cleanupClients();
+            vTaskDelete(NULL);
+        },
+        "wsclient",
+        3000,
+        this,
+        1,
+        &networking_task
+    );
+    wsclient.poll();
 }
