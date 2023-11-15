@@ -11,8 +11,8 @@ www.elektron.work
 #include "connection.hpp"
 
 
-#define PIN_ECHO 17
-#define PIN_TRIGGER 16
+#define PIN_ECHO 26
+#define PIN_TRIGGER 25
 
 #define SETUP_HTL
 #include "secrets.h"
@@ -48,11 +48,6 @@ float distance;
 
 void loop()
 {
-    con.report(45);
-
-    delay(700);
-
-    return;
     digitalWrite(PIN_TRIGGER, HIGH); 
     delayMicroseconds(10); 
     digitalWrite(PIN_TRIGGER, LOW); 
@@ -62,6 +57,7 @@ void loop()
     distance = duration * 0.0344 / 2;
 
     printf("distance: %f\n", distance);
+    con.report(distance);
     
-    delay(300);
+    delay(1000);
 }
