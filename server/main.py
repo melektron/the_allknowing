@@ -28,7 +28,13 @@ async def client_receiver(socket: ws_server.WebSocketServerProtocol, path: str):
 
 
 async def main() -> int:
-    async with ws_server.serve(client_receiver, "0.0.0.0", 80):
+    async with ws_server.serve(
+        client_receiver, 
+        "0.0.0.0", 
+        80,
+        ping_interval=5,
+        ping_timeout=5
+    ):
         await asyncio.Future()
 
 

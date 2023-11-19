@@ -171,7 +171,7 @@ void Networking::run()
                     !_this->server_connected &&         // if it is not connected
                     !_this->update_in_progress &&       // and we are not currently updating
                     WiFi.isConnected() &&               // and we have wifi
-                    millis() - _this->disconnect_time > 5000    // and server disconnect is more than 5seconds ago
+                    millis() - _this->disconnect_time > 3000    // and server disconnect is more than 3 seconds ago
                 ) {
                     _this->connectServer();
                 }

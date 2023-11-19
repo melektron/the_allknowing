@@ -1,0 +1,8 @@
+{
+    "uses_trigger_on": true,
+    "uses_trigger_off": false,
+    "uses_distance_change": true,
+    "trigger_distance": 80,
+    "trigger_direction": "below",
+    "trigger_hysteresis": 30
+}

@@ -8,6 +8,7 @@ www.elektron.work
 #include <Arduino.h>
 #include <WiFi.h>
 #include <ArduinoOTA.h>
+#include <array>
 
 #include "networking.hpp"
 
@@ -16,7 +17,7 @@ www.elektron.work
 #define PIN_TRIGGER 25
 
 
-Networking con;
+Networking net;
 
 
 void setup()
@@ -28,41 +29,54 @@ void setup()
     pinMode(PIN_ECHO, INPUT_PULLUP);
 
     // connect to wifi
-    con.connectWiFi();
+    net.connectWiFi();
 
     // start OTA service
-    con.startOTA();
+    net.startOTA();
 
     // connect to server
-    con.connectServer();
+    net.connectServer();
 
     // start networking task
-    con.run();
+    net.run();
 }
 
 void loop()
 {
     // if update in progress, stop doing anything in the meantime
-    if (con.updateInProgress())
+    if (net.updateInProgress())
     {
         delay(1000);
         return;
     }
-    
-    // send ultrasonic pulse
-    digitalWrite(PIN_TRIGGER, HIGH);
-    delayMicroseconds(10);
-    digitalWrite(PIN_TRIGGER, LOW);
 
-    // wait for reflection
-    float duration = pulseIn(PIN_ECHO, HIGH);
-    // calculate distance
-    float distance = duration * 0.0344 / 2;
+#define NR_SAMPLES 3
+    static std::array<float, NR_SAMPLES> samples;
+
+    for (int i = 0; i < 3; i++)
+    {
+        // send ultrasonic pulse
+        digitalWrite(PIN_TRIGGER, HIGH);
+        delayMicroseconds(10);
+        digitalWrite(PIN_TRIGGER, LOW);
+
+        // wait for reflection
+        float duration = pulseIn(PIN_ECHO, HIGH);
+        // calculate distance
+        float distance = duration * 0.0344 / 2;
+
+        samples[i] = distance;
+
+        delay(50);
+    }
+    
+    float avg = 0;
+    for (auto sample : samples)
+        avg += sample;
+    avg /= NR_SAMPLES;
 
     // report to server
-    printf("distance: %f\n", distance);
-    con.report(distance);
+    printf("distance: %f\n", avg);
+    net.report(avg);
 
-    // wait a bit
-    delay(50);
 }
