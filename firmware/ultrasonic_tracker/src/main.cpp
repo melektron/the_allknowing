@@ -7,18 +7,17 @@ www.elektron.work
 
 #include <Arduino.h>
 #include <WiFi.h>
+#include <ArduinoOTA.h>
 
-#include "connection.hpp"
+#include "networking.hpp"
 
 
 #define PIN_ECHO 26
 #define PIN_TRIGGER 25
 
-#define SETUP_HOME
-#include "secrets.h"
-#define SERVER_URL "ws://" SERVER_IP "/sensor" 
 
-Connection con;
+Networking con;
+
 
 void setup()
 {
@@ -28,25 +27,14 @@ void setup()
     pinMode(PIN_TRIGGER, OUTPUT);
     pinMode(PIN_ECHO, INPUT_PULLUP);
 
-    printf("MAC=%llx\n", ESP.getEfuseMac());
-    printf("MAC=%s\n", WiFi.macAddress().c_str());
-    printf("SSID=%s\n", WIFI_SSID);
-
     // connect to wifi
-    WiFi.begin(WIFI_SSID, WIFI_PSK);
-    printf("Connecting.");
+    con.connectWiFi();
 
-    // wait for connection
-    while (!WiFi.isConnected())
-    {
-        delay(500);
-        printf(".");
-        fflush(stdout);
-    }
-    printf("\nWiFi connected!\n");
+    // start OTA service
+    con.startOTA();
 
     // connect to server
-    con.connect(SERVER_URL);
+    con.connectServer();
 
     // start networking task
     con.run();
@@ -54,10 +42,17 @@ void setup()
 
 void loop()
 {
+    // if update in progress, stop doing anything in the meantime
+    if (con.updateInProgress())
+    {
+        delay(1000);
+        return;
+    }
+    
     // send ultrasonic pulse
-    digitalWrite(PIN_TRIGGER, HIGH); 
-    delayMicroseconds(10); 
-    digitalWrite(PIN_TRIGGER, LOW); 
+    digitalWrite(PIN_TRIGGER, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(PIN_TRIGGER, LOW);
 
     // wait for reflection
     float duration = pulseIn(PIN_ECHO, HIGH);
@@ -67,7 +62,7 @@ void loop()
     // report to server
     printf("distance: %f\n", distance);
     con.report(distance);
-    
+
     // wait a bit
-    delay(1000);
+    delay(50);
 }

@@ -21,7 +21,7 @@ class SensorDistancMessage(pydantic.BaseModel):
     type: typing.Literal["dist"] 
     dist: int
 
-SensorMessage = pydantic.TypeAdapter[SensorIdentifyMessage | SensorDistancMessage]
+SensorMessage = pydantic.TypeAdapter(SensorIdentifyMessage | SensorDistancMessage)
 
 class SensorClient:
     def __init__(self, socket: ws_server.WebSocketServerProtocol) -> None:
@@ -31,7 +31,7 @@ class SensorClient:
     async def process_client(self):
         try:
             async for message in self._socket:
-                await self._socket.send(message)
+                #await self._socket.send(message)
                 try:
                     msg = SensorMessage.validate_json(message)
                 except pydantic.ValidationError:
