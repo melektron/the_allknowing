@@ -10,6 +10,7 @@ import websockets.exceptions as ws_ex
 
 from src.sensor_client import SensorClient
 from src.light_client import LightClient
+from src.devices import connected_lights, connected_sensors
 
 async def client_receiver(socket: ws_server.WebSocketServerProtocol, path: str):
     print(f"{path=}")
@@ -39,7 +40,9 @@ async def main() -> int:
         ping_interval=5,
         ping_timeout=5
     ):
-        await asyncio.Future()
+        while True:
+            #print(f"sensors: {", ".join(connected_sensors)}")
+            await asyncio.sleep(3)
 
 
 if __name__ == "__main__":

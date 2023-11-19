@@ -10,52 +10,55 @@ class which handles light client
 import websockets.server as ws_server
 import pydantic
 import typing
+import enum
 
 from .client import Client
 from .devices import connected_lights
 from .datastore import specialized_file
 
 
-class _LightCommandMessage(pydantic.BaseModel):
-    type: typing.Literal["dist"]
-    dist: int
+
+class _LightAnimationDoneMessage(pydantic.BaseModel):
+    type: typing.Literal["ad"]
+    id: int
 
 
-_LightMessage = pydantic.TypeAdapter(_LightCommandMessage)
+_LightIncomingMessage = pydantic.TypeAdapter(_LightAnimationDoneMessage)
 
 
-@specialized_file(base_path=["config", "lights"])
-class _LightConfigFile(pydantic.BaseModel):
-    ...
+class _LightSetBrightnessMessage(pydantic.BaseModel):
+    type: typing.Literal["br"] = "br"
+    br: bool
+
+
+class _LightStartAnimationMessage(pydantic.BaseModel):
+    id: int
+
+
+class _LightBlitzMessage(_LightStartAnimationMessage):
+    type: typing.Literal["blitz"] = "blitz"
+    dur: int    # duration in ms
 
 
 class LightClient(Client):
     @property
     def type_name(self) -> str:
-        return "light"
+        return "light client"
     
     def __init__(self, socket: ws_server.WebSocketServerProtocol) -> None:
         super().__init__(socket)
 
-        # set after identify
-        if typing.TYPE_CHECKING:
-            self._config = _LightConfigFile()
-        else:
-            self._config = None
 
     async def on_identified(self):
-        # open config file
-        self._config = _LightConfigFile([self.mac_hex])
-        # register sensor
-        connected_lights[self.mac_hex] = self
+        ...
     
     async def on_message(self, msg: str):
         # try to validate the message
-        msg = _LightMessage.validate_json(msg)
+        msg = _LightIncomingMessage.validate_json(msg)
         # call handlers
         match msg:
             case _:
                 ...
 
     async def on_disconnect(self):
-        del connected_lights[self.mac_hex]
+        ...

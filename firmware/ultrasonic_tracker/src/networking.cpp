@@ -195,7 +195,7 @@ void Networking::report(uint8_t _distance)
     if (server_connected)
     {
         char buffer[101] = {0};
-        snprintf(buffer, 100, "{\"type\":\"dist\", \"dist\":%hhu}", _distance);
+        snprintf(buffer, 100, "{\"type\":\"dist\",\"sub\":0,\"dist\":%hhu}", _distance);
         wsclient.send(buffer);
     }
 }

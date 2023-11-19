@@ -10,8 +10,8 @@ exports lists of connected devices
 import typing
 
 if typing.TYPE_CHECKING:
-    from .sensor_client import SensorClient
-    from .light_client import LightClient
+    from .sensor_device import SensorDevice
+    from .light_device import LightDevice
 
-connected_sensors: dict[str, "SensorClient"] = dict()
-connected_lights: dict[str, "LightClient"] = dict()
+connected_sensors: dict[str, "SensorDevice"] = dict()
+connected_lights: dict[str, "LightDevice"] = dict()

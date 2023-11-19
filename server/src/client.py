@@ -29,9 +29,6 @@ class Client(abc.ABC):
         self._has_identified = False
         self._mac = 0
         self._nr_subdevices = 0
-    
-    def __del__(self):
-        print("deleted client")
 
     @property
     def mac_hex(self) -> str:
