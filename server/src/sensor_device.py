@@ -9,10 +9,16 @@ specialization for sensor devices
 
 import pydantic
 import typing
+import traceback
 
 from .device import Device
 from .datastore import specialized_file
 from .devices import connected_sensors
+from .actions import AnyAction, run_actions
+
+if typing.TYPE_CHECKING:
+    from .device_client import DeviceClient
+
 
 @specialized_file
 class _SensorConfigFile(pydantic.BaseModel):
@@ -28,14 +34,19 @@ class _SensorConfigFile(pydantic.BaseModel):
     trigger_direction: typing.Literal["above", "below"] = "below"
     trigger_hysteresis: int = 10    # cm
 
+    # actions to perform on events
+    on_trigger_on: list[AnyAction] = []
+    on_trigger_off: list[AnyAction] = []
+    on_distance_change: list[AnyAction] = []
+
 
 class SensorDevice(Device):
     @property
     def type_name(self) -> str:
         return "sensor"
     
-    def __init__(self, client_mac: str, subdevice_id: int) -> None:
-        super().__init__(client_mac, subdevice_id)
+    def __init__(self, client_mac: str, subdevice_id: int, client: "DeviceClient") -> None:
+        super().__init__(client_mac, subdevice_id, client)
 
         # config file for the device
         self._config = _SensorConfigFile(self.config_path)
@@ -77,13 +88,19 @@ class SensorDevice(Device):
         await self._send_distance_changed_event()
     
     async def _send_trigger_on_event(self):
-        if self._config.uses_trigger_on:
-            print(f"sensor {self.id}: trigger on")
+        if not self._config.uses_trigger_on:
+            return
+        print(f"sensor {self.id}: trigger on")
+        await run_actions(self._config.on_trigger_on, None)
 
     async def _send_trigger_off_event(self):
-        if self._config.uses_trigger_off:
-            print(f"sensor {self.id}: trigger off")
+        if not self._config.uses_trigger_off:
+            return
+        print(f"sensor {self.id}: trigger off")
+        await run_actions(self._config.on_trigger_off, None)
 
     async def _send_distance_changed_event(self):
-        if self._config.uses_distance_change:
-            print(f"sensor {self.id}: distance changed to {self._distance}cm")
+        if not self._config.uses_distance_change:
+            return
+        print(f"sensor {self.id}: distance changed to {self._distance}cm")
+        await run_actions(self._config.on_distance_change, self._distance)

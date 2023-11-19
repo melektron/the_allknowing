@@ -16,7 +16,7 @@ implementation of the server connection
 namespace pl = std::placeholders;
 
 
-#define SERVER_URL "ws://" SERVER_IP "/sensor" 
+#define SERVER_URL "ws://" SERVER_IP "/device" 
 
 
 // helper to print wifi status

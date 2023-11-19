@@ -14,11 +14,18 @@ import pydantic
 import typing
 import abc
 
+if typing.TYPE_CHECKING:
+    from .device_client import DeviceClient
 
 
 class Device(abc.ABC):
-    def __init__(self, client_mac: str, subdevice_id: int) -> None:
+    def __init__(self, client_mac: str, subdevice_id: int, client: "DeviceClient") -> None:
+        self._subdevice_id = subdevice_id
         self._id: str = client_mac + f".{subdevice_id}"
+        self._client = client
+    
+    def __del__(self):
+        print("device deleted")
 
     @property
     def id(self) -> str:
