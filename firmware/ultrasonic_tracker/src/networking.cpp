@@ -61,7 +61,7 @@ void Networking::onEvent(ws::WebsocketsEvent _evt, String _data)
         server_connected = true;
         // send MAC address
         char buffer[101] = {0};
-        snprintf(buffer, 100, "{\"type\":\"mac\", \"mac\":%llu}", ESP.getEfuseMac());
+        snprintf(buffer, 100, "{\"type\":\"id\",\"mac\":%llu,\"subcount\":1}", ESP.getEfuseMac());
         wsclient.send(buffer);
 
     } else if(_evt == ws::WebsocketsEvent::ConnectionClosed) {

@@ -9,6 +9,7 @@ import websockets.server as ws_server
 import websockets.exceptions as ws_ex
 
 from src.sensor_client import SensorClient
+from src.light_client import LightClient
 
 async def client_receiver(socket: ws_server.WebSocketServerProtocol, path: str):
     print(f"{path=}")
@@ -22,9 +23,12 @@ async def client_receiver(socket: ws_server.WebSocketServerProtocol, path: str):
             except ws_ex.ConnectionClosed:
                 print("test socket disconnected")
         
-        case "/sensor":        
+        case "/sensor":
             sensor = SensorClient(socket=socket)
             await sensor.process_client()
+        case "/light":
+            light = LightClient(socket=socket)
+            await light.process_client()
 
 
 async def main() -> int:

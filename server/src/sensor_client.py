@@ -8,26 +8,20 @@ class which handles a sensor client
 """
 
 import websockets.server as ws_server
-import websockets.exceptions as ws_ex
 import pydantic
 import typing
-import asyncio
 
+from .client import Client
 from .devices import connected_sensors
 from .datastore import specialized_file
 
 
-class _SensorIdentifyMessage(pydantic.BaseModel):
-    type: typing.Literal["mac"]
-    mac: int
-
-
-class _SensorDistancMessage(pydantic.BaseModel):
+class _SensorDistanceMessage(pydantic.BaseModel):
     type: typing.Literal["dist"]
     dist: int
 
 
-_SensorMessage = pydantic.TypeAdapter(_SensorIdentifyMessage | _SensorDistancMessage)
+_SensorMessage = pydantic.TypeAdapter(_SensorDistanceMessage)
 
 
 @specialized_file(base_path=["config", "sensors"])
@@ -45,16 +39,15 @@ class _SensorConfigFile(pydantic.BaseModel):
     trigger_hysteresis: int = 10    # cm
 
 
-
-class SensorClient:
+class SensorClient(Client):
+    @property
+    def type_name(self) -> str:
+        return "sensor"
+    
     def __init__(self, socket: ws_server.WebSocketServerProtocol) -> None:
-        print("sensor connected")
-        self._socket = socket
+        super().__init__(socket)
 
-        # after identification, the sensor will be properly initialized and these
-        # members set to a reasonable value
-        self._has_identified = False
-        self._mac = 0
+        # set after identify
         if typing.TYPE_CHECKING:
             self._config = _SensorConfigFile()
         else:
@@ -65,44 +58,24 @@ class SensorClient:
         # distance functionality
         self._distance = 0
     
-    @property
-    def mac_hex(self) -> str:
-        return hex(self._mac)
-
-    async def process_client(self):
-        try:
-            # wait for a message
-            async for message in self._socket:
-                try:
-                    # try to validate it
-                    msg = _SensorMessage.validate_json(message)
-                    # call handlers
-                    match msg:
-                        case _SensorIdentifyMessage():
-                            await self._handle_identify_message(msg)
-                        case _SensorDistancMessage():
-                            await self._handle_distance_message(msg)
-
-                except pydantic.ValidationError:
-                    print(f"got invalid message from sensor {self.mac_hex}")
-
-        except ws_ex.ConnectionClosed:
-            self._handle_disconnect()
-
-    def _handle_disconnect(self):
-        print(f"sensor {self.mac_hex if self._has_identified else "(unidentified)"} disconnected")
-        connected_sensors.discard(self)
-
-    async def _handle_identify_message(self, msg: _SensorIdentifyMessage):
-        self._has_identified = True
-        self._mac = msg.mac
+    async def on_identified(self):
         # open config file
-        self._config = _SensorConfigFile([hex(self._mac)])
+        self._config = _SensorConfigFile([self.mac_hex])
+        # register sensor
+        connected_sensors[self.mac_hex] = self
+    
+    async def on_message(self, msg: str):
+        # try to validate the message
+        msg = _SensorMessage.validate_json(msg)
+        # call handlers
+        match msg:
+            case _SensorDistanceMessage():
+                await self._handle_distance_message(msg)
 
-        print(f"sensor {self.mac_hex} has identified itself and is ready")
-        connected_sensors.add(self)
+    async def on_disconnect(self):
+        del connected_sensors[self.mac_hex]
 
-    async def _handle_distance_message(self, msg: _SensorDistancMessage):
+    async def _handle_distance_message(self, msg: _SensorDistanceMessage):
         if not self._has_identified:
             return
         
