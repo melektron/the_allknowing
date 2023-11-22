@@ -62,6 +62,29 @@ Networking::Networking(std::vector<SensorDevice*> _sensors, std::vector<LightDev
 void Networking::onMessage(ws::WebsocketsMessage _msg)
 {
     printf("Got Message: %s\n", _msg.c_str());
+    DynamicJsonDocument jbuffer(1024);
+    if (deserializeJson(jbuffer, _msg.c_str()) != DeserializationError::Ok)
+    {
+        printf("Got invalid json message, ignoring");
+    }
+    // read message type
+    std::string msg_type = jbuffer["type"];
+    const int sub = jbuffer["sub"];
+    const int sub_sensor = sub;
+    const int sub_light = sub - sensors.size();
+    if (msg_type == "col")
+    {
+        uint8_t r = jbuffer["r"];
+        uint8_t g = jbuffer["g"];
+        uint8_t b = jbuffer["b"];
+        lights[sub_light]->setFullColor(CRGB(r, g, b));
+    }
+    if (msg_type == "br")
+    {
+        int br = jbuffer["br"];
+        lights[sub_light]->setBrightness((uint8_t)br);
+    }
+
 }
 
 void Networking::onEvent(ws::WebsocketsEvent _evt, String _data)

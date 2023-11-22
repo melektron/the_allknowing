@@ -8,8 +8,6 @@ class which handles a sensor client
 """
 
 import websockets.server as ws_server
-import pydantic
-import typing
 
 from .client import Client
 from .device import Device

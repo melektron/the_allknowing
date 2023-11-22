@@ -9,46 +9,31 @@ www.elektron.work
 #include <WiFi.h>
 #include <ArduinoOTA.h>
 #include <array>
+#include <FastLED.h>
 
 #include "networking.hpp"
 
 
 #define PIN_ECHO 26
 #define PIN_TRIGGER 25
-
 SensorDevice ultrasound1;
-SensorDevice ultrasound2;
+
+#define PIN_LED 27
+std::vector<CRGB> leds1(30);
+LightDevice strip1(leds1);
+
 
 Networking net(
     {
         &ultrasound1,
-        &ultrasound2,
+    },
+    {
+        &strip1
     }
 );
 
 
-void setup()
-{
-    Serial.begin(115200);
-
-    // initialize pins for distance sensor
-    pinMode(PIN_TRIGGER, OUTPUT);
-    pinMode(PIN_ECHO, INPUT_PULLUP);
-
-    // connect to wifi
-    net.connectWiFi();
-
-    // start OTA service
-    net.startOTA();
-
-    // connect to server
-    net.connectServer();
-
-    // start networking task
-    net.run();
-}
-
-void loop()
+void processUltrasoundSensor()
 {
     // if update in progress, stop doing anything in the meantime
     if (net.updateInProgress())
@@ -85,6 +70,33 @@ void loop()
     // report to server
     printf("distance: %f\n", avg);
     ultrasound1.setValue(avg);
-    ultrasound2.setValue(avg + 10);
+}
 
+void setup()
+{
+    Serial.begin(115200);
+
+    // initialize pins for distance sensor
+    pinMode(PIN_TRIGGER, OUTPUT);
+    pinMode(PIN_ECHO, INPUT_PULLUP);
+
+    FastLED.setBrightness(50);
+    strip1.initialize<PIN_LED>();
+
+    // connect to wifi
+    net.connectWiFi();
+
+    // start OTA service
+    net.startOTA();
+
+    // connect to server
+    net.connectServer();
+
+    // start networking task
+    net.run();
+}
+
+void loop()
+{
+    processUltrasoundSensor();
 }

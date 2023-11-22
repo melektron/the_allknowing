@@ -9,7 +9,6 @@ specialization for sensor devices
 
 import pydantic
 import typing
-import traceback
 
 from .device import Device
 from .datastore import specialized_file

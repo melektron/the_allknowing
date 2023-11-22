@@ -7,10 +7,6 @@ www.elektron.work
 class representing one logical device.
 A client may have multiple logical devices.
 """
-
-import websockets.server as ws_server
-import websockets.exceptions as ws_ex
-import pydantic
 import typing
 import abc
 
