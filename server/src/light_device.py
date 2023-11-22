@@ -26,21 +26,37 @@ class LightDevice(Device):
     def __init__(self, client_mac: str, subdevice_id: int, client: "DeviceClient") -> None:
         super().__init__(client_mac, subdevice_id, client)
 
-        self._animation_id_counter: int = 0
-        self._running_animations: dict[int, typing.Any] = {}
+        #self._animation_id_counter: int = 0
+        #self._running_animations: dict[int, typing.Any] = {}
 
         connected_lights[self.id] = self
     
     async def on_disconnect(self):
         del connected_lights[self.id]
     
-    async def on_animation_done(self, anim_id: int):
-        del self._running_animations[anim_id]
+    #async def on_animation_done(self, anim_id: int):
+    #    del self._running_animations[anim_id]
+
+    async def set_brightness(self, br: int):
+        """
+        br 0..255
+        """
+        await self._client.send_message(LightSetBrightnessMessage(
+            sub=self._subdevice_id,
+            br=br
+        ))
+
+    async def set_static_color(self, color: tuple[int, int, int]):
+        await self._client.send_message(LightSetStaticColorMessage(
+            sub=self._subdevice_id,
+            r=color[0],
+            g=color[1],
+            b=color[2],
+        ))
     
     async def animate_blitz(self, duration: int):
         await self._client.send_message(LightBlitzMessage(
             sub=self._subdevice_id,
-            id=self._animation_id_counter,
             dur=duration
         ))
-        self._animation_id_counter += 1
+        #self._animation_id_counter += 1

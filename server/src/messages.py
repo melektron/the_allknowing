@@ -30,13 +30,14 @@ DeviceIncomingMessage = pydantic.TypeAdapter(SensorDistanceMessage | LightAnimat
 
 class LightSetBrightnessMessage(BaseMessage):
     type: typing.Literal["br"] = "br"
-    br: bool
+    br: int
 
+class LightSetStaticColorMessage(BaseMessage):
+    type: typing.Literal["col"] = "col"
+    r: int
+    g: int
+    b: int
 
-class LightStartAnimationMessage(BaseMessage):
-    id: int
-
-
-class LightBlitzMessage(LightStartAnimationMessage):
+class LightBlitzMessage(BaseMessage):
     type: typing.Literal["blitz"] = "blitz"
     dur: int    # duration in ms

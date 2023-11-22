@@ -41,18 +41,40 @@ class BaseAction(pydantic.BaseModel):
 
     async def run(self, input: typing.Any = None):
         self._input = input
+        await self._run_impl();
+    
+    async def _run_impl(self):
+        ...
+
+
+class ActionSetBrightness(BaseAction):
+    action: typing.Literal["brightness"]
+    brightness: ExpressionType
+
+    async def _run_impl(self):
+        print(f"brightness={self.eval_expr(self.brightness)}")
+        light = self.get_light()
+        await light.set_brightness(self.eval_expr(self.brightness))
+
+
+class ActionSetStaticColor(BaseAction):
+    action: typing.Literal["static_color"]
+    color: ExpressionType
+
+    async def _run_impl(self):
+        print(f"color={self.eval_expr(self.color)}")
+        light = self.get_light()
+        await light.set_static_color(self.eval_expr(self.color))
 
 
 class ActionBlitz(BaseAction):
     action: typing.Literal["blitz"]
     duration: ExpressionType
 
-    async def run(self, input: typing.Any = None):
-        await super().run(input)
-        print("test blitz action")
+    async def _run_impl(self, input: typing.Any = None):
         print(f"duration={self.eval_expr(self.duration)}")
         light = self.get_light()
-        light.animate_blitz(self.eval_expr(self.duration))
+        await light.animate_blitz(self.eval_expr(self.duration))
 
 
 class ActionDummy(BaseAction):
@@ -63,7 +85,7 @@ class ActionDummy(BaseAction):
         print("dummy ran")
 
 
-type AnyAction = ActionBlitz | ActionDummy
+type AnyAction = ActionSetBrightness | ActionSetStaticColor | ActionBlitz | ActionDummy
 
 
 async def run_actions(actions: list[AnyAction], input: typing.Any = None):
