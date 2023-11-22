@@ -48,6 +48,16 @@ class BaseAction(pydantic.BaseModel):
 
 
 class ActionSetBrightness(BaseAction):
+    """
+    Example:
+    ```json
+    {
+        "action": "brightness",
+        "target": "5452fc5d8634.1",
+        "brightness": "min(input * 3, 255)"
+    }
+    ```
+    """
     action: typing.Literal["brightness"]
     brightness: ExpressionType
 
@@ -58,6 +68,16 @@ class ActionSetBrightness(BaseAction):
 
 
 class ActionSetStaticColor(BaseAction):
+    """
+    Example:
+    ```json
+    {
+        "action": "static_color",
+        "target": "5452fc5d8634.1",
+        "color": "(0, 0, 255)"
+    }
+    ```
+    """
     action: typing.Literal["static_color"]
     color: ExpressionType
 
@@ -70,11 +90,15 @@ class ActionSetStaticColor(BaseAction):
 class ActionBlitz(BaseAction):
     action: typing.Literal["blitz"]
     duration: ExpressionType
+    color: ExpressionType
 
     async def _run_impl(self) -> None:
-        print(f"duration={self.eval_expr(self.duration)}")
+        print(f"color={self.eval_expr(self.color)} duration={self.eval_expr(self.duration)}")
         light = self.get_light()
-        await light.animate_blitz(self.eval_expr(self.duration))
+        await light.animate_blitz(
+            color=self.eval_expr(self.color),
+            duration=self.eval_expr(self.duration)
+        )
 
 
 class ActionWave(BaseAction):

@@ -84,6 +84,14 @@ void Networking::onMessage(ws::WebsocketsMessage _msg)
         int br = jbuffer["br"];
         lights[sub_light]->setBrightness((uint8_t)br);
     }
+    if (msg_type == "blitz")
+    {
+        uint8_t r = jbuffer["r"];
+        uint8_t g = jbuffer["g"];
+        uint8_t b = jbuffer["b"];
+        int dur = jbuffer["dur"];
+        lights[sub_light]->startBlitzAnimation(CRGB(r, g, b), dur);
+    }
 
 }
 
@@ -192,6 +200,7 @@ void Networking::run()
 {
     xTaskCreate(
         [](void *_arg){
+            uint32_t last_frame_time = millis();
             for (;;)
             {
                 Networking *_this = static_cast<Networking*>(_arg);
@@ -227,6 +236,18 @@ void Networking::run()
                     {
                         _this->sendSensorReport(*sensor);
                     }
+                }
+
+                // render frame if needed
+                if (millis() - last_frame_time >= 100)
+                {
+                    for (auto &light : _this->lights)
+                    {
+                        light->renderFrame();
+                    }
+                    LightDevice::push();
+
+                    last_frame_time = millis();
                 }
 
                 // wait a bit for next poll

@@ -55,10 +55,13 @@ class LightDevice(Device):
             b=color[2],
         ))
     
-    async def animate_blitz(self, duration: int) -> None:
+    async def animate_blitz(self, color: tuple[int, int, int], duration: int) -> None:
         await self._client.send_message(LightBlitzMessage(
             sub=self._subdevice_id,
-            dur=duration
+            dur=duration,
+            r=color[0],
+            g=color[1],
+            b=color[2],
         ))
         #self._animation_id_counter += 1
 
