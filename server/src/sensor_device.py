@@ -9,6 +9,7 @@ specialization for sensor devices
 
 import pydantic
 import typing
+from collections import deque
 
 from .device import Device
 from .datastore import specialized_file
@@ -32,6 +33,7 @@ class _SensorConfigFile(pydantic.BaseModel):
     trigger_distance: int = 50  # cm
     trigger_direction: typing.Literal["above", "below"] = "below"
     trigger_hysteresis: int = 10    # cm
+    trigger_samples: int = 3    # how many samples should be averaged (running average) for trigger processing
 
     # actions to perform on events
     on_trigger_on: list[AnyAction] = []
@@ -52,7 +54,9 @@ class SensorDevice(Device):
 
         # trigger functionality
         self._is_triggered = False
-        # distance functionality
+        self._running_avg_samples: deque[int] = deque(maxlen=self._config.trigger_samples)
+        self._running_avg_distance: int = 0
+        # current distance for distance functionality
         self._distance = 0
 
         connected_sensors[self.id] = self
@@ -61,25 +65,30 @@ class SensorDevice(Device):
         del connected_sensors[self.id]
     
     async def on_distance_update(self, distance: int) -> None:
+        # save distance
         self._distance = distance
+
+        # update running average:
+        self._running_avg_samples.append(distance)
+        self._running_avg_distance = sum(self._running_avg_samples) / len(self._running_avg_samples)
 
         # create level trigger events
         if self._is_triggered:
             if self._config.trigger_direction == "above":
-                if self._distance < self._config.trigger_distance - self._config.trigger_hysteresis:
+                if self._running_avg_distance < self._config.trigger_distance - self._config.trigger_hysteresis:
                     self._is_triggered = False
                     await self._send_trigger_off_event()
             elif self._config.trigger_direction == "below":
-                if self._distance > self._config.trigger_distance + self._config.trigger_hysteresis:
+                if self._running_avg_distance > self._config.trigger_distance + self._config.trigger_hysteresis:
                     self._is_triggered = False
                     await self._send_trigger_off_event()
         else:
             if self._config.trigger_direction == "above":
-                if self._distance > self._config.trigger_distance:
+                if self._running_avg_distance > self._config.trigger_distance:
                     self._is_triggered = True
                     await self._send_trigger_on_event()
             elif self._config.trigger_direction == "below":
-                if self._distance < self._config.trigger_distance:
+                if self._running_avg_distance < self._config.trigger_distance:
                     self._is_triggered = True
                     await self._send_trigger_on_event()
         
@@ -90,13 +99,13 @@ class SensorDevice(Device):
         if not self._config.uses_trigger_on:
             return
         print(f"sensor {self.id}: trigger on")
-        await run_actions(self._config.on_trigger_on, None)
+        await run_actions(self._config.on_trigger_on, self._running_avg_distance)
 
     async def _send_trigger_off_event(self) -> None:
         if not self._config.uses_trigger_off:
             return
         print(f"sensor {self.id}: trigger off")
-        await run_actions(self._config.on_trigger_off, None)
+        await run_actions(self._config.on_trigger_off, self._running_avg_distance)
 
     async def _send_distance_changed_event(self) -> None:
         if not self._config.uses_distance_change:

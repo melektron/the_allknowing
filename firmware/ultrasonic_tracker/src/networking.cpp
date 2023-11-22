@@ -230,7 +230,7 @@ void Networking::run()
                 }
 
                 // wait a bit for next poll
-                delay(10);
+                delay(5);
             }
 
             vTaskDelete(NULL);

@@ -45,6 +45,7 @@ void processUltrasoundSensor()
 #define NR_SAMPLES 3
     static std::array<float, NR_SAMPLES> samples;
 
+    // first average is calculated here
     for (int i = 0; i < 3; i++)
     {
         // send ultrasonic pulse
@@ -59,7 +60,7 @@ void processUltrasoundSensor()
 
         samples[i] = distance;
 
-        delay(50);
+        delay(15);
     }
     
     float avg = 0;
