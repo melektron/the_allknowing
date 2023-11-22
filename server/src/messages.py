@@ -42,7 +42,6 @@ class LightSetStaticColorMessage(BaseMessage):
 
 
 class LightBlitzMessage(BaseMessage):
-class LightBlitzMessage(BaseMessage):
     type: typing.Literal["blitz"] = "blitz"
     dur: int    # duration in ms
 

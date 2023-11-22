@@ -22,27 +22,27 @@ class BaseAction(pydantic.BaseModel):
     target: str
     _input: typing.Any = None
 
-    def get_light(self) -> LightDevice:
+    def get_light(self) -> "LightDevice":
         try:
             return connected_lights[self.target]
         except KeyError:
             print(f"action failed: light {self.target} is not connected")
             raise
 
-    def get_sensor(self) -> SensorDevice:
+    def get_sensor(self) -> "SensorDevice":
         try:
             return connected_sensors[self.target]
         except KeyError:
             print(f"action failed: sensor {self.target} is not connected")
             raise
-    
+
     def eval_expr(self, expr: ExpressionType) -> typing.Any:
         return eval(str(expr), {}, {"input": self._input})
 
     async def run(self, input: typing.Any = None) -> None:
         self._input = input
-        await self._run_impl();
-    
+        await self._run_impl()
+
     async def _run_impl(self):
         ...
 
@@ -71,7 +71,7 @@ class ActionBlitz(BaseAction):
     action: typing.Literal["blitz"]
     duration: ExpressionType
 
-    async def _run_impl(self, _input: typing.Any = None) -> None:
+    async def _run_impl(self) -> None:
         print(f"duration={self.eval_expr(self.duration)}")
         light = self.get_light()
         await light.animate_blitz(self.eval_expr(self.duration))
@@ -81,7 +81,7 @@ class ActionWave(BaseAction):
     action: typing.Literal["wave"]
     duration: ExpressionType
 
-    async def _run_impl(self, _input: typing.Any = None) -> None:
+    async def _run_impl(self) -> None:
         print(f"duration={self.eval_expr(self.duration)}")
 
         light = self.get_light()
@@ -92,7 +92,7 @@ class ActionAvoid(BaseAction):
     action: typing.Literal["avoid"]
     speed: ExpressionType
 
-    async def _run_impl(self, _input: typing.Any =  None) -> None:
+    async def _run_impl(self) -> None:
         print(f"speed={self.eval_expr(self.speed)}")
 
         light = self.get_light()
@@ -104,18 +104,20 @@ class ActionBlink(BaseAction):
     duration: ExpressionType
     n_blinks: ExpressionType
 
-    async def _run_impl(self, _input: typing.Any = None) -> None:
+    async def _run_impl(self) -> None:
         print(f"duration={self.eval_expr(self.duration)}, n_blinks={self.eval_expr(self.n_blinks)}")
 
         light = self.get_light()
-        await light.animate_blink(self.eval_expr(self.speed), self.eval_expr(self.n_blinks))
+        await light.animate_blink(
+            self.eval_expr(self.speed), self.eval_expr(self.n_blinks)
+        )
 
 
 class ActionRainbow(BaseAction):
     action: typing.Literal["rainbow"]
     duration: ExpressionType
 
-    async def _run_impl(self, _input: typing.Any = None) -> None:
+    async def _run_impl(self) -> None:
         print(f"duration={self.eval_expr(self.duration)}")
 
         light = self.get_light()
@@ -125,13 +127,20 @@ class ActionRainbow(BaseAction):
 class ActionDummy(BaseAction):
     action: typing.Literal["dummy"]
 
-    async def run(self, input: typing.Any = None) -> None:
-        await super().run(input)
+    async def _run_impl(self) -> None:
         print("dummy ran")
 
 
-type AnyAction = ActionSetBrightness | ActionSetStaticColor | ActionBlitz | ActionDummy
-type AnyAction = ActionSetBrightness | ActionSetStaticColor | ActionBlitz | ActionDummy
+type AnyAction = (
+    ActionSetBrightness
+    | ActionSetStaticColor
+    | ActionBlitz
+    | ActionWave
+    | ActionAvoid
+    | ActionBlink
+    | ActionRainbow
+    | ActionDummy
+)
 
 
 async def run_actions(actions: list[AnyAction], input: typing.Any = None) -> None:

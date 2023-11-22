@@ -57,10 +57,10 @@ class SensorDevice(Device):
 
         connected_sensors[self.id] = self
     
-    async def on_disconnect(self):
+    async def on_disconnect(self) -> None:
         del connected_sensors[self.id]
     
-    async def on_distance_update(self, distance: int):
+    async def on_distance_update(self, distance: int) -> None:
         self._distance = distance
 
         # create level trigger events
@@ -86,19 +86,19 @@ class SensorDevice(Device):
         # create distance changed event
         await self._send_distance_changed_event()
     
-    async def _send_trigger_on_event(self):
+    async def _send_trigger_on_event(self) -> None:
         if not self._config.uses_trigger_on:
             return
         print(f"sensor {self.id}: trigger on")
         await run_actions(self._config.on_trigger_on, None)
 
-    async def _send_trigger_off_event(self):
+    async def _send_trigger_off_event(self) -> None:
         if not self._config.uses_trigger_off:
             return
         print(f"sensor {self.id}: trigger off")
         await run_actions(self._config.on_trigger_off, None)
 
-    async def _send_distance_changed_event(self):
+    async def _send_distance_changed_event(self) -> None:
         if not self._config.uses_distance_change:
             return
         print(f"sensor {self.id}: distance changed to {self._distance}cm")

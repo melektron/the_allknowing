@@ -20,7 +20,7 @@ class Device(abc.ABC):
         self._id: str = client_mac + f".{subdevice_id}"
         self._client = client
     
-    def __del__(self):
+    def __del__(self) -> None:
         print("device deleted")
 
     @property
@@ -45,7 +45,7 @@ class Device(abc.ABC):
         ...
     
     @abc.abstractmethod
-    async def on_disconnect(self):
+    async def on_disconnect(self) -> None:
         """
         called when the client the device is associated with disconnects.
         Any cleanup can be done here.

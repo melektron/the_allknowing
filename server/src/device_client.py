@@ -26,10 +26,10 @@ class DeviceClient(Client):
 
         self._subdevices: list[Device] = []
     
-    def __del__(self):
+    def __del__(self) -> None:
         print("client deleted")
     
-    async def on_identified(self):
+    async def on_identified(self) -> None:
         # create all the 
         print(f"Initializing {self._nr_sensors} sensor(s) and {self._nr_lights} lights(s)")
         sub_nr: int = 0
@@ -40,7 +40,7 @@ class DeviceClient(Client):
             self._subdevices.append(LightDevice(self.mac_hex, sub_nr, self))
             sub_nr += 1
     
-    async def on_message(self, msg_in: str):
+    async def on_message(self, msg_in: str) -> None:
         # try to validate the message
         msg = DeviceIncomingMessage.validate_json(msg_in)
         target = self._subdevices[msg.sub]
@@ -55,11 +55,11 @@ class DeviceClient(Client):
             case _:
                 print("message not implemented jet")
 
-    async def on_disconnect(self):
+    async def on_disconnect(self) -> None:
         for device in self._subdevices:
             await device.on_disconnect()
     
-    async def send_message(self, message: BaseMessage):
+    async def send_message(self, message: BaseMessage) -> None:
         """
         encodes and sends a message to a client.
         This is used by device classes to send their specific messages.

@@ -9,6 +9,11 @@
         {
             "action": "static_color",
             "target": "5452fc5d8634.1",
+            "color": "(255, 0, 0)"
+        },
+        {
+            "action": "brightness",
+            "target": "5452fc5d8634.1",
             "brightness": 255
         }
     ],
