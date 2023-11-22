@@ -32,9 +32,15 @@ class DeviceClient(Client):
         print("client deleted")
     
     async def on_identified(self):
-        # create all the subdevices
-        for sub_nr in range(self._nr_subdevices):
+        # create all the 
+        print(f"Initializing {self._nr_sensors} sensor(s) and {self._nr_lights} lights(s)")
+        sub_nr: int = 0
+        for _ in range(self._nr_sensors):
             self._subdevices.append(SensorDevice(self.mac_hex, sub_nr, self))
+            sub_nr += 1
+        for _ in range(self._nr_lights):
+            self._subdevices.append(LightDevice(self.mac_hex, sub_nr, self))
+            sub_nr += 1
     
     async def on_message(self, msg_in: str):
         # try to validate the message

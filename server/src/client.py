@@ -17,7 +17,8 @@ import abc
 class _ClientIdentifyMessage(pydantic.BaseModel):
     type: typing.Literal["id"]
     mac: int        # MAC address of device
-    subcount: int   # nr of subdevices
+    sensors: int    # nr of sensors
+    lights: int     # nr of lights
 
 
 class Client(abc.ABC):
@@ -28,7 +29,12 @@ class Client(abc.ABC):
         # members set to a reasonable value
         self._has_identified = False
         self._mac = 0
-        self._nr_subdevices = 0
+        self._nr_sensors = 0
+        self._nr_lights = 0
+    
+    @property
+    def _nr_subdevices(self) -> int:
+        self._nr_sensors + self._nr_lights
 
     @property
     def mac_hex(self) -> str:
@@ -72,7 +78,8 @@ class Client(abc.ABC):
         """
         self._has_identified = True
         self._mac = msg.mac
-        self._nr_subdevices = msg.subcount
+        self._nr_sensors = msg.sensors
+        self._nr_lights = msg.lights
         print(f"{self.type_name} {self.mac_hex} has identified itself and is ready")
         await self.on_identified()
     

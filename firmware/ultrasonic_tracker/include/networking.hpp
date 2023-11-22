@@ -10,8 +10,11 @@ implementation of the server connection
 #pragma once
 
 #include <ArduinoWebsockets.h>
+#include <vector>
 
 #include "secrets.h"
+#include "sensor_device.hpp"
+#include "light_device.hpp"
 
 namespace ws = websockets;
 
@@ -31,15 +34,28 @@ private:    // state
     // time used to keep track when server connection was lost
     uint64_t disconnect_time = 0;
 
+    // list of sensors and lights
+    std::vector<SensorDevice*> sensors;
+    std::vector<LightDevice*> lights;
+    
+
 private:    // methods
 
     // websocket library callbacks
     void onMessage(ws::WebsocketsMessage _msg);
     void onEvent(ws::WebsocketsEvent _evt, String _data);   // must use arduino string unfortunately
 
+
+    /**
+     * @brief reports a distance to the server
+     * 
+     * @param _sensor the sensor to report
+     */
+    void sendSensorReport(SensorDevice &_sensor);
+
 public:
 
-    Networking();
+    Networking(std::vector<SensorDevice*> _sensors = {}, std::vector<LightDevice*> _lights = {});
 
     /**
      * @brief initiates the configured WiFi connection.
@@ -65,13 +81,6 @@ public:
      * 
      */
     void run();
-    
-    /**
-     * @brief reports a distance to the server
-     * 
-     * @param _distance the distance of the sensor in cm.
-     */
-    void report(uint8_t distance);
 
     /**
      * @retval true update in progress

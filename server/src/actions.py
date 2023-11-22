@@ -13,7 +13,9 @@ import traceback
 
 from .devices import *
 
+
 type ExpressionType = str | int | float | bool | None
+
 
 class BaseAction(pydantic.BaseModel):
     action: str
@@ -52,6 +54,7 @@ class ActionBlitz(BaseAction):
         light = self.get_light()
         light.animate_blitz(self.eval_expr(self.duration))
 
+
 class ActionDummy(BaseAction):
     action: typing.Literal["dummy"]
 
@@ -61,6 +64,7 @@ class ActionDummy(BaseAction):
 
 
 type AnyAction = ActionBlitz | ActionDummy
+
 
 async def run_actions(actions: list[AnyAction], input: typing.Any = None):
     for action in actions:

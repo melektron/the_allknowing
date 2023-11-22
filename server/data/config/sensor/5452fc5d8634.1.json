@@ -1,13 +1,11 @@
 {
-    "uses_trigger_on": true,
+    "uses_trigger_on": false,
     "uses_trigger_off": false,
     "uses_distance_change": true,
-    "trigger_distance": 80,
+    "trigger_distance": 50,
     "trigger_direction": "below",
-    "trigger_hysteresis": 30,
+    "trigger_hysteresis": 10,
     "on_trigger_on": [],
     "on_trigger_off": [],
-    "on_distance_change": [
-        
-    ]
+    "on_distance_change": []
 }

@@ -9,6 +9,7 @@ implementation of the server connection
 
 #include <functional>
 #include <ArduinoOTA.h>
+#include <ArduinoJson.h>
 
 #include "networking.hpp"
 
@@ -43,8 +44,17 @@ static const char *get_wifi_status_string(int status)
 }
 
 
-Networking::Networking()
+Networking::Networking(std::vector<SensorDevice*> _sensors, std::vector<LightDevice*> _lights)
+    : sensors(_sensors)
+    , lights(_lights)
 {
+    // configure IDs
+    int subid_count = 0;
+    for (auto *sensor : sensors)
+        sensor->subdevice_id = subid_count++;
+    for (auto *light : lights)
+        light->subdevice_id = subid_count++;
+
     wsclient.onMessage(std::bind(&Networking::onMessage, this, pl::_1));
     wsclient.onEvent(std::bind(&Networking::onEvent, this, pl::_1, pl::_2));
 }
@@ -59,10 +69,15 @@ void Networking::onEvent(ws::WebsocketsEvent _evt, String _data)
     if(_evt == ws::WebsocketsEvent::ConnectionOpened) {
         printf("WS Connnection Opened\n");
         server_connected = true;
-        // send MAC address
-        char buffer[101] = {0};
-        snprintf(buffer, 100, "{\"type\":\"id\",\"mac\":%llu,\"subcount\":1}", ESP.getEfuseMac());
-        wsclient.send(buffer);
+        // send identification message
+        DynamicJsonDocument jbuffer(1024);
+        jbuffer["type"] = "id";
+        jbuffer["mac"] = ESP.getEfuseMac();
+        jbuffer["sensors"] = sensors.size();
+        jbuffer["lights"] = lights.size();
+        String outbuffer;
+        serializeJson(jbuffer, outbuffer);
+        wsclient.send(outbuffer);
 
     } else if(_evt == ws::WebsocketsEvent::ConnectionClosed) {
         printf("WS Connnection Closed\n");
@@ -80,6 +95,12 @@ void Networking::connectWiFi()
     printf("MAC=%llx\n", ESP.getEfuseMac());
     printf("MAC=%s\n", WiFi.macAddress().c_str());
     printf("SSID=%s\n", WIFI_SSID);
+
+    // static IP config
+    //IPAddress host_ip(192, 168, 204, 3);
+    //IPAddress gateway(192, 168, 207, 254);
+    //IPAddress subnet(255, 255, 252, 0);
+    //WiFi.config(host_ip, gateway, subnet);
 
     WiFi.mode(WIFI_STA);
     WiFi.begin(WIFI_SSID, WIFI_PSK);
@@ -175,7 +196,17 @@ void Networking::run()
                 ) {
                     _this->connectServer();
                 }
-                
+
+                // check for sensor changes
+                for (auto *sensor : _this->sensors)
+                {
+                    if (sensor->hasChanged())
+                    {
+                        _this->sendSensorReport(*sensor);
+                    }
+                }
+
+                // wait a bit for next poll
                 delay(10);
             }
 
@@ -190,13 +221,18 @@ void Networking::run()
     wsclient.poll();
 }
 
-void Networking::report(uint8_t _distance)
+void Networking::sendSensorReport(SensorDevice &_sensor)
 {
     if (server_connected)
     {
-        char buffer[101] = {0};
-        snprintf(buffer, 100, "{\"type\":\"dist\",\"sub\":0,\"dist\":%hhu}", _distance);
-        wsclient.send(buffer);
+        // send identification message
+        DynamicJsonDocument jbuffer(1024);
+        jbuffer["type"] = "dist";
+        jbuffer["sub"] = _sensor.subdevice_id;
+        jbuffer["dist"] = _sensor.getValue();
+        String outbuffer;
+        serializeJson(jbuffer, outbuffer);
+        wsclient.send(outbuffer);
     }
 }
 

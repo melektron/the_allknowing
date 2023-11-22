@@ -16,8 +16,15 @@ www.elektron.work
 #define PIN_ECHO 26
 #define PIN_TRIGGER 25
 
+SensorDevice ultrasound1;
+SensorDevice ultrasound2;
 
-Networking net;
+Networking net(
+    {
+        &ultrasound1,
+        &ultrasound2,
+    }
+);
 
 
 void setup()
@@ -77,6 +84,7 @@ void loop()
 
     // report to server
     printf("distance: %f\n", avg);
-    net.report(avg);
+    ultrasound1.setValue(avg);
+    ultrasound2.setValue(avg + 10);
 
 }
