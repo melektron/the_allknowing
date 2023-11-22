@@ -131,6 +131,7 @@ class ActionDummy(BaseAction):
 
 
 type AnyAction = ActionSetBrightness | ActionSetStaticColor | ActionBlitz | ActionDummy
+type AnyAction = ActionSetBrightness | ActionSetStaticColor | ActionBlitz | ActionDummy
 
 
 async def run_actions(actions: list[AnyAction], input: typing.Any = None) -> None:

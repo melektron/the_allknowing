@@ -27,6 +27,8 @@ class LightDevice(Device):
 
         #self._animation_id_counter: int = 0
         #self._running_animations: dict[int, typing.Any] = {}
+        #self._animation_id_counter: int = 0
+        #self._running_animations: dict[int, typing.Any] = {}
 
         connected_lights[self.id] = self
     
