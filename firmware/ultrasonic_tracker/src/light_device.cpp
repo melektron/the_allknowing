@@ -96,7 +96,7 @@ void LightDevice::push() noexcept
     FastLED.show();
 }
 
-void LightDevice::setFullColor(const CRGB &_color)
+void LightDevice::setBackgroundColor(const CRGB &_color)
 {
     background_color = _color;
 }
@@ -113,6 +113,24 @@ void LightDevice::startBlitzAnimation(const CRGB &_color, int _dur)
             frame_buffer.size(),
             _color,
             _dur
+        )
+    );
+}
+void LightDevice::startWaveAnimation(
+    const double _speed,
+    anim::WaveAnimation::direction_t _direction,
+    int _starting_position,
+    int _width,
+    const CRGB &_color
+) {
+    addAnimation(
+        std::make_shared<anim::WaveAnimation>(
+            frame_buffer.size(),
+            _speed,
+            _direction,
+            _starting_position,
+            _width,
+            _color
         )
     );
 }

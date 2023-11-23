@@ -80,5 +80,62 @@ namespace anim
     };
 
 
+    class WaveAnimation : public Animation
+    {
+    public:
+        enum direction_t
+        {
+            BOTH = 0,
+            UP = 1,
+            DOWN = 2
+        };
+    protected:
+        // pixels per frame
+        const double speed;
+        // whether wave should go in both directions or just one
+        const direction_t direction;
+        // where on the strip the wave should spread out from
+        const int starting_position;
+        // how wide the wave body should be in pixels. This includes the faded area
+        const int width;
+        // the wave color
+        const CRGB color;
+
+        /**
+         * @brief function that creates a smooth curve with the
+         * range 0.0 to 1.0 from positions in the range
+         * of -width to +width.
+         * 
+         * @param _position 
+         * @return double 
+         */
+        double waveFunction(double _position) const noexcept;
+
+        /**
+         * @brief renders a single wave into the frame buffer
+         * at a given position. Returns false
+         * if none of the rendered pixels were within
+         * the visible frame buffer range anymore.
+         * 
+         * @param position 
+         * @return true was still on screen
+         * @return false no longer on screen
+         */
+        bool renderWave(int position) noexcept;
+
+        virtual void renderFrameInternal() noexcept override;
+    
+    public:
+        WaveAnimation(
+            int _nr_leds,
+            const double _speed,
+            direction_t _direction,
+            int _starting_position,
+            int _width,
+            const CRGB &_color
+        );
+    };
+
+
 
 } // namespace anim

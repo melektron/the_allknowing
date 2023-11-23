@@ -73,7 +73,7 @@ public:
      * 
      * @param _color 
      */
-    void setFullColor(const CRGB &_color);
+    void setBackgroundColor(const CRGB &_color);
 
     /**
      * @brief registers a new animation in the running animations. 
@@ -90,4 +90,12 @@ public:
      * @param _dur duration of blitz in frames
      */
     void startBlitzAnimation(const CRGB &_color, int _dur);
+
+    void startWaveAnimation(
+        const double _speed,
+        anim::WaveAnimation::direction_t _direction,
+        int _starting_position,
+        int _width,
+        const CRGB &_color
+    );
 };

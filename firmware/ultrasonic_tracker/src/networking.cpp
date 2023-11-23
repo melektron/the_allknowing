@@ -77,11 +77,13 @@ void Networking::onMessage(ws::WebsocketsMessage _msg)
         uint8_t r = jbuffer["r"];
         uint8_t g = jbuffer["g"];
         uint8_t b = jbuffer["b"];
-        lights[sub_light]->setFullColor(CRGB(r, g, b));
+
+        lights[sub_light]->setBackgroundColor(CRGB(r, g, b));
     }
     if (msg_type == "br")
     {
         int br = jbuffer["br"];
+
         lights[sub_light]->setBrightness((uint8_t)br);
     }
     if (msg_type == "blitz")
@@ -90,7 +92,20 @@ void Networking::onMessage(ws::WebsocketsMessage _msg)
         uint8_t g = jbuffer["g"];
         uint8_t b = jbuffer["b"];
         int dur = jbuffer["dur"];
+
         lights[sub_light]->startBlitzAnimation(CRGB(r, g, b), dur);
+    }
+    if (msg_type == "wave")
+    {
+        uint8_t r = jbuffer["r"];
+        uint8_t g = jbuffer["g"];
+        uint8_t b = jbuffer["b"];
+        double s = jbuffer["s"];    // speed
+        anim::WaveAnimation::direction_t dir = jbuffer["dir"];
+        int pos = jbuffer["pos"];
+        int w = jbuffer["w"];
+        
+        lights[sub_light]->startWaveAnimation(s, dir, pos, w, CRGB(r, g, b));
     }
 
 }
