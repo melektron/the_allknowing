@@ -134,3 +134,21 @@ void LightDevice::startWaveAnimation(
         )
     );
 }
+
+
+void LightDevice::startBlinkAnimation(
+    const CRGB &_color,
+    int _on_period,
+    int _off_period,
+    int _n_blinks
+) {
+    addAnimation(
+        std::make_shared<anim::BlinkAnimation>(
+            frame_buffer.size(),
+            _color,
+            _on_period,
+            _off_period,
+            _n_blinks
+        )
+    );
+}

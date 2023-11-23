@@ -62,6 +62,7 @@ void BlitzAnimation::renderFrameInternal() noexcept
         animation_completed = true;
 }
 
+
 WaveAnimation::WaveAnimation(
     int _nr_leds,
     const double _speed,
@@ -164,4 +165,52 @@ void WaveAnimation::renderFrameInternal() noexcept
 
     // if no part of the wave was visible anymore, the animation is complete.
     animation_completed = !on_screen;
+}
+
+
+BlinkAnimation::BlinkAnimation(
+    int _nr_leds,
+    const CRGB &_color,
+    int _on_period,
+    int _off_period,
+    int _n_blinks
+)
+    : Animation(_nr_leds)
+    , color(_color)
+    , on_period(_on_period)
+    , off_period(_off_period)
+    , n_blinks(_n_blinks)
+{
+    n_blinks_left = n_blinks;
+
+    // if we are initialized with 0 blinks, complete immediately
+    if (n_blinks_left <= 0)
+        animation_completed = true;
+}
+
+void BlinkAnimation::renderFrameInternal() noexcept
+{
+    // don't do anything if complete (should only happen once if nblinks already starts at 0)
+    if (n_blinks_left <= 0)
+        return;
+    
+    // frame counter for current phase
+    int phase_frame = frame_counter % (on_period + off_period);
+
+    // when first phase starts, turn light on for the first time (now in on period)
+    if (phase_frame == 0 && on_period > 0)
+    {
+        for (CRGB &_led : frame_buffer)
+            _led = color;
+    }
+    // when exiting the on period, turn off light (now in off period)
+    else if (phase_frame == on_period && off_period > 0)
+    {
+        for (CRGB &_led : frame_buffer)
+            _led.setRGB(0, 0, 0);
+    }
+
+    // finish the animation after all frames are completed
+    if (frame_counter >= (on_period + off_period) * n_blinks - 1)
+        animation_completed = true;
 }

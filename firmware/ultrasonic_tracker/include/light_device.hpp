@@ -98,4 +98,11 @@ public:
         int _width,
         const CRGB &_color
     );
+
+    void startBlinkAnimation(
+        const CRGB &_color,
+        int _on_period,
+        int _off_period,
+        int _n_blinks
+    );
 };

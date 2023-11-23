@@ -137,5 +137,30 @@ namespace anim
     };
 
 
+    class BlinkAnimation : public Animation
+    {
+    protected:
+        // number of frames light should be on
+        const int on_period;
+        // number of frames light should be off
+        const int off_period;
+        // number of repetitions
+        const int n_blinks;
+        // color to blink in
+        CRGB color;
+
+        // number of blinks left (counted down)
+        int n_blinks_left;
+
+        virtual void renderFrameInternal() noexcept override;
+    
+    public:
+        BlinkAnimation(int _nr_leds, const CRGB &_color, int _on_period, int _off_period, int _n_blinks);
+    };
+
+
+    
+
+
 
 } // namespace anim
