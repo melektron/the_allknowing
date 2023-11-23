@@ -1,0 +1,42 @@
+"""
+ELEKTRON © 2023 - now
+Written by melektron
+www.elektron.work
+10.08.23, 23:30
+
+Descriptor to extract the content of a datastore
+as a separate member of a class.
+(currently not working)
+"""
+
+
+#import typing
+#
+#from ._file import File
+#
+#T = typing.TypeVar("T")
+#
+#class Content(typing.Generic[T]):
+#    """
+#    Descriptor to extract content of a datastore File into a separate
+#    class member of a user's class for easier access:
+#    
+#    ```python
+#    class MyClass:
+#        _data = datastore.Content()
+#        def __init__(self):
+#            self._my_file = datastore.File(["hello"], MyDataModel)
+#            self._data = self._my_file.content
+#    ```
+#    """
+#
+#    def __init__(self) -> None:
+#        self._file: File[T] = None
+#
+#    def __get__(self, obj: typing.Any, objtype: typing.Type = None) -> T:
+#        return self._file.content
+#    
+#    def __set__(self, obj: typing.Any, value: File[T]):
+#        self._file = value
+#    
+#

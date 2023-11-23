@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name": "ultrasonic_tracker",
+			"path": "firmware/ultrasonic_tracker"
+		}
+	],
+	"settings": {}
+}
