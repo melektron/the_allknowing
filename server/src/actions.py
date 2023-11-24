@@ -12,6 +12,7 @@ import pydantic
 import traceback
 
 from .devices import *
+from .enums import Direction
 
 
 type ExpressionType = str | int | float | bool | None
@@ -104,12 +105,26 @@ class ActionBlitz(BaseAction):
 class ActionWave(BaseAction):
     action: typing.Literal["wave"]
     duration: ExpressionType
+    dir: Direction
+    width: int
+    color: tuple[int, int, int]
 
     async def _run_impl(self) -> None:
-        print(f"duration={self.eval_expr(self.duration)}")
+        print(
+            f"wave anim:\n"
+            f"\tduration={self.eval_expr(self.duration)}\n"
+            f"\tdirection={self.eval_expr(self.direction)}\n"
+            f"\twidth={self.eval_expr(self.width)}\n"
+            f"\tcolor={self.eval_expr(self.color)}\n"
+        )
 
         light = self.get_light()
-        await light.animate_wave(self.eval_expr(self.duration))
+        await light.animate_wave(
+            self.eval_expr(self.duration),
+            self.eval_expr(self.direction),
+            self.eval_expr(self.width),
+            self.eval_expr(self.color)
+        )
 
 
 class ActionAvoid(BaseAction):
