@@ -24,6 +24,7 @@ async def client_receiver(socket: ws_server.WebSocketServerProtocol, path: str):
                 print("test socket disconnected")
         
         case "/device":
+            print(f"connection from: {socket.remote_address}")
             device = DeviceClient(socket=socket)
             await device.process_client()
 
