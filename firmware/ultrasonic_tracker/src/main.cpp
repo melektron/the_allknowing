@@ -18,9 +18,13 @@ www.elektron.work
 #define PIN_TRIGGER 25
 SensorDevice ultrasound1;
 
-#define PIN_LED 27
-std::vector<CRGB> leds1(30);
-LightDevice strip1(leds1);
+//#define PIN_LED0 25
+//std::vector<CRGB> leds0(79);
+//LightDevice strip0(leds0);
+//
+//#define PIN_LED1 26
+//std::vector<CRGB> leds1(79);
+//LightDevice strip1(leds1);
 
 
 Networking net(
@@ -28,7 +32,8 @@ Networking net(
         &ultrasound1,
     },
     {
-        &strip1
+        //&strip0,
+        //&strip1,
     }
 );
 
@@ -81,8 +86,9 @@ void setup()
     pinMode(PIN_TRIGGER, OUTPUT);
     pinMode(PIN_ECHO, INPUT_PULLUP);
 
-    FastLED.setBrightness(50);
-    strip1.initialize<PIN_LED>();
+    //FastLED.setBrightness(50);
+    //strip0.initialize<PIN_LED0>();
+    //strip1.initialize<PIN_LED1>();
 
     // connect to wifi
     net.connectWiFi();
