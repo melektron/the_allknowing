@@ -57,6 +57,7 @@ class LightDevice(Device):
     async def animate_blitz(self, color: tuple[int, int, int], duration: int) -> None:
         await self._client.send_message(LightBlitzMessage(
             sub=self._subdevice_id,
+            dur=duration,
             r=color[0],
             g=color[1],
             b=color[2],
@@ -65,16 +66,18 @@ class LightDevice(Device):
 
     async def animate_wave(
             self,
-            duration: int,
+            position: int,
             direction: Direction,
+            speed: float,
             width: int,
             color: tuple[int, int, int]
     ) -> None:
         await self._client.send_message(LightWaveMessage(
             sub=self._subdevice_id,
-            dur=duration,
             dir=direction,
-            width=width,
+            pos=position,
+            s=speed,
+            w=width,
             r=color[0],
             g=color[1],
             b=color[2]

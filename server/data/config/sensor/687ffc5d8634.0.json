@@ -1,0 +1,36 @@
+{
+    "uses_trigger_on": true,
+    "uses_trigger_off": true,
+    "uses_distance_change": true,
+    "trigger_distance": 10,
+    "trigger_direction": "below",
+    "trigger_hysteresis": 2,
+    "trigger_samples": 2,
+    "on_trigger_on": [
+        {
+            "action": "brightness",
+            "target": "687ffc5d8634.1",
+            "brightness": 255
+        },
+        {
+            "action": "wave",
+            "target": "687ffc5d8634.1",
+            "position": 15,
+            "direction": 0,
+            "speed": 1.0,
+            "width": 4,
+            "color": "(0, 255, 0)"
+        },
+        {
+            "action": "wave",
+            "target": "687ffc5d8634.1",
+            "position": 15,
+            "direction": 2,
+            "speed": 3.0,
+            "width": 4,
+            "color": "(255, 0, 0)"
+        }
+    ],
+    "on_trigger_off": [],
+    "on_distance_change": []
+}

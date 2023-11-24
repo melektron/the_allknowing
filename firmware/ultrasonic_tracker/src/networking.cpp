@@ -190,6 +190,7 @@ bool Networking::connectServer()
 
 void Networking::startOTA()
 {
+            printf("removed one animation\n");
     printf("Configuring OTA...");
     ArduinoOTA.onStart([this]() {
         if (ArduinoOTA.getCommand() == U_FLASH)
@@ -265,7 +266,7 @@ void Networking::run()
                 }
 
                 // render frame if needed
-                if (millis() - last_frame_time >= 100)
+                if (millis() - last_frame_time >= 50)
                 {
                     for (auto &light : _this->lights)
                     {

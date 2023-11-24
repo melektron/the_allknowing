@@ -52,9 +52,10 @@ class LightBlitzMessage(BaseMessage):
 
 class LightWaveMessage(BaseMessage):
     type: typing.Literal["wave"] = "wave"
-    dur: int    # duration in ms
     dir: Direction
-    width: int
+    pos: int
+    s: float
+    w: int
     r: int
     g: int
     b: int

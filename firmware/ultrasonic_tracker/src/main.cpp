@@ -69,7 +69,7 @@ void processUltrasoundSensor()
     avg /= NR_SAMPLES;
 
     // report to server
-    printf("distance: %f\n", avg);
+    //printf("distance: %f\n", avg);
     ultrasound1.setValue(avg);
 }
 

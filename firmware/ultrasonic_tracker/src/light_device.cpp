@@ -39,7 +39,7 @@ void LightDevice::renderFrame() noexcept
                 background_color.g * weight,
                 background_color.b * weight
             );
-        printf("composited bg\n");
+        //printf("composited bg\n");
     }
     else
     {
@@ -49,7 +49,7 @@ void LightDevice::renderFrame() noexcept
         // clear the composite frame buffer
         for (CRGB &_led : frame_buffer)
             _led.setRGB(0, 0, 0);
-        printf("ignored bg\n");
+        //printf("ignored bg\n");
     }
 
 
@@ -60,7 +60,7 @@ void LightDevice::renderFrame() noexcept
         // make sure buffer size is compatible
         if (frame_buffer.size() != animation->frame_buffer.size())
         {
-            printf("Cannot composite frame of animation because frame buffer size does not match\n");
+            //printf("Cannot composite frame of animation because frame buffer size does not match\n");
             continue;
         }
         // composite it onto composition frame buffer
@@ -76,7 +76,7 @@ void LightDevice::renderFrame() noexcept
             output_it++;
             input_it++;
         }
-        printf("composited one animation\n");
+        //printf("composited one animation\n");
     }
 
     // remove all the animations that are finished.
@@ -85,7 +85,7 @@ void LightDevice::renderFrame() noexcept
         if ((*it)->isComplete())
         {
             it = running_animations.erase(it);
-            printf("removed one animation\n");
+            //printf("removed one animation\n");
         }
     }
 }
