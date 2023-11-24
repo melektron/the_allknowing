@@ -6,9 +6,10 @@ www.elektron.work
 
 all message data models for the device client
 """
-
 import typing
 import pydantic
+
+from .enums import Direction
 
 
 class BaseMessage(pydantic.BaseModel):
@@ -52,19 +53,33 @@ class LightBlitzMessage(BaseMessage):
 class LightWaveMessage(BaseMessage):
     type: typing.Literal["wave"] = "wave"
     dur: int    # duration in ms
+    dir: Direction
+    width: int
+    r: int
+    g: int
+    b: int
 
 
 class LightAvoidMessage(BaseMessage):
     type: typing.Literal["avoid"] = "avoid"
     speed: int  # retraction speed from 0 to 100
+    r: int
+    g: int
+    b: int
 
 
 class LightBlinkMessage(BaseMessage):
     type: typing.Literal["blink"] = "blink"
     dur: int    # duration per blink in ms
     n: int      # number of blinks
+    r: int
+    g: int
+    b: int
 
 
 class LightRainbowMessage(BaseMessage):
-    type: typing.Literal["rainbow"]
+    type: typing.Literal["rainbow"] = "rainbow"
     dur: int    # duration in ms
+    r: int
+    g: int
+    b: int

@@ -7,10 +7,9 @@ www.elektron.work
 specialization for light devices
 """
 
-import typing
-
 from .device import Device
 from .devices import connected_lights
+from .enums import Direction
 from .messages import *
 
 if typing.TYPE_CHECKING:
@@ -58,34 +57,66 @@ class LightDevice(Device):
     async def animate_blitz(self, color: tuple[int, int, int], duration: int) -> None:
         await self._client.send_message(LightBlitzMessage(
             sub=self._subdevice_id,
-            dur=duration,
             r=color[0],
             g=color[1],
             b=color[2],
         ))
         #self._animation_id_counter += 1
 
-    async def animate_wave(self, duration: int) -> None:
+    async def animate_wave(
+            self,
+            duration: int,
+            direction: Direction,
+            width: int,
+            color: tuple[int, int, int]
+    ) -> None:
         await self._client.send_message(LightWaveMessage(
             sub=self._subdevice_id,
-            dur=duration
+            dur=duration,
+            dir=direction,
+            width=width,
+            r=color[0],
+            g=color[1],
+            b=color[2]
         ))
 
-    async def animate_avoid(self, speed: int) -> None:
+    async def animate_avoid(
+            self,
+            speed: int,
+            color: tuple[int, int, int]
+        ) -> None:
         await self._client.send_message(LightWaveMessage(
             sub=self._subdevice_id,
-            speed=speed
+            speed=speed,
+            r=color[0],
+            g=color[1],
+            b=color[2]
         ))
 
-    async def animate_blink(self, duration: int, n_blinks: int) -> None:
+    async def animate_blink(
+            self,
+            duration: int,
+            n_blinks: int,
+            color: tuple[int, int, int]
+        ) -> None:
         await self._client.send_message(LightBlinkMessage(
             sub=self._subdevice_id,
             dur=duration,
-            n=n_blinks
+            n=n_blinks,
+            r=color[0],
+            g=color[1],
+            b=color[2]
         ))
 
-    async def animate_rainbow(self, duration: int) -> None:
+    async def animate_rainbow(
+            self,
+            duration: int,
+            color: tuple[int, int, int]
+        ) -> None:
         await self._client.send_message(LightRainbowMessage(
             sub=self._subdevice_id,
-            dur=duration
+            dur=duration,
+            r=color[0],
+            g=color[1],
+            b=color[2]
         ))
