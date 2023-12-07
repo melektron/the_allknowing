@@ -1,0 +1,67 @@
+{
+    "uses_trigger_on": true,
+    "uses_trigger_off": false,
+    "uses_distance_change": true,
+    "trigger_distance": 110,
+    "trigger_direction": "below",
+    "trigger_hysteresis": 10,
+    "trigger_samples": 2,
+    "on_trigger_on": [
+        {
+            "action": "wave",
+            "target": "284cfd5d8634.0",
+            "position": 40,
+            "direction": 0,
+            "speed": 2.0,
+            "width": 4,
+            "color": "(228, 35, 157)"
+        },
+        {
+            "action": "wave",
+            "target": "284cfd5d8634.1",
+            "position": 40,
+            "direction": 0,
+            "speed": 2.0,
+            "width": 4,
+            "color": "(228, 35, 157)"
+        },
+        {
+            "action": "wave",
+            "target": "284cfd5d8634.0",
+            "position": 40,
+            "direction": 0,
+            "speed": 1.5,
+            "width": 4,
+            "color": "(255, 0, 0)"
+        },
+        {
+            "action": "wave",
+            "target": "284cfd5d8634.1",
+            "position": 40,
+            "direction": 0,
+            "speed": 1.5,
+            "width": 4,
+            "color": "(255, 0, 0)"
+        },
+        {
+            "action": "wave",
+            "target": "284cfd5d8634.0",
+            "position": 40,
+            "direction": 0,
+            "speed": 1.2,
+            "width": 4,
+            "color": "(55, 255, 0)"
+        },
+        {
+            "action": "wave",
+            "target": "284cfd5d8634.1",
+            "position": 40,
+            "direction": 0,
+            "speed": 1.2,
+            "width": 4,
+            "color": "(55, 255, 0)"
+        }
+    ],
+    "on_trigger_off": [],
+    "on_distance_change": []
+}

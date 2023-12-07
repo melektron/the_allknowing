@@ -77,20 +77,46 @@ void Networking::onMessage(ws::WebsocketsMessage _msg)
         uint8_t r = jbuffer["r"];
         uint8_t g = jbuffer["g"];
         uint8_t b = jbuffer["b"];
-        lights[sub_light]->setFullColor(CRGB(r, g, b));
+
+        lights[sub_light]->setBackgroundColor(CRGB(r, g, b));
     }
-    if (msg_type == "br")
+    else if (msg_type == "br")
     {
         int br = jbuffer["br"];
+
         lights[sub_light]->setBrightness((uint8_t)br);
     }
-    if (msg_type == "blitz")
+    else if (msg_type == "blitz")
     {
         uint8_t r = jbuffer["r"];
         uint8_t g = jbuffer["g"];
         uint8_t b = jbuffer["b"];
         int dur = jbuffer["dur"];
+
         lights[sub_light]->startBlitzAnimation(CRGB(r, g, b), dur);
+    }
+    else if (msg_type == "wave")
+    {
+        uint8_t r = jbuffer["r"];
+        uint8_t g = jbuffer["g"];
+        uint8_t b = jbuffer["b"];
+        double s = jbuffer["s"];    // speed
+        anim::WaveAnimation::direction_t dir = jbuffer["dir"];
+        int pos = jbuffer["pos"];
+        int w = jbuffer["w"];
+        
+        lights[sub_light]->startWaveAnimation(s, dir, pos, w, CRGB(r, g, b));
+    }
+    else if (msg_type == "blink")
+    {
+        uint8_t r = jbuffer["r"];
+        uint8_t g = jbuffer["g"];
+        uint8_t b = jbuffer["b"];
+        int on = jbuffer["on"];
+        int off = jbuffer["off"];
+        int n = jbuffer["n"];
+        
+        lights[sub_light]->startBlinkAnimation(CRGB(r, g, b), on, off, n);
     }
 
 }
@@ -164,6 +190,7 @@ bool Networking::connectServer()
 
 void Networking::startOTA()
 {
+            printf("removed one animation\n");
     printf("Configuring OTA...");
     ArduinoOTA.onStart([this]() {
         if (ArduinoOTA.getCommand() == U_FLASH)
@@ -239,7 +266,7 @@ void Networking::run()
                 }
 
                 // render frame if needed
-                if (millis() - last_frame_time >= 100)
+                if (millis() - last_frame_time >= 50)
                 {
                     for (auto &light : _this->lights)
                     {

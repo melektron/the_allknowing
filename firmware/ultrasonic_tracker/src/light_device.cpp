@@ -39,7 +39,7 @@ void LightDevice::renderFrame() noexcept
                 background_color.g * weight,
                 background_color.b * weight
             );
-        printf("composited bg\n");
+        //printf("composited bg\n");
     }
     else
     {
@@ -49,7 +49,7 @@ void LightDevice::renderFrame() noexcept
         // clear the composite frame buffer
         for (CRGB &_led : frame_buffer)
             _led.setRGB(0, 0, 0);
-        printf("ignored bg\n");
+        //printf("ignored bg\n");
     }
 
 
@@ -60,7 +60,7 @@ void LightDevice::renderFrame() noexcept
         // make sure buffer size is compatible
         if (frame_buffer.size() != animation->frame_buffer.size())
         {
-            printf("Cannot composite frame of animation because frame buffer size does not match\n");
+            //printf("Cannot composite frame of animation because frame buffer size does not match\n");
             continue;
         }
         // composite it onto composition frame buffer
@@ -76,7 +76,7 @@ void LightDevice::renderFrame() noexcept
             output_it++;
             input_it++;
         }
-        printf("composited one animation\n");
+        //printf("composited one animation\n");
     }
 
     // remove all the animations that are finished.
@@ -85,7 +85,7 @@ void LightDevice::renderFrame() noexcept
         if ((*it)->isComplete())
         {
             it = running_animations.erase(it);
-            printf("removed one animation\n");
+            //printf("removed one animation\n");
         }
     }
 }
@@ -96,7 +96,7 @@ void LightDevice::push() noexcept
     FastLED.show();
 }
 
-void LightDevice::setFullColor(const CRGB &_color)
+void LightDevice::setBackgroundColor(const CRGB &_color)
 {
     background_color = _color;
 }
@@ -113,6 +113,42 @@ void LightDevice::startBlitzAnimation(const CRGB &_color, int _dur)
             frame_buffer.size(),
             _color,
             _dur
+        )
+    );
+}
+void LightDevice::startWaveAnimation(
+    const double _speed,
+    anim::WaveAnimation::direction_t _direction,
+    int _starting_position,
+    int _width,
+    const CRGB &_color
+) {
+    addAnimation(
+        std::make_shared<anim::WaveAnimation>(
+            frame_buffer.size(),
+            _speed,
+            _direction,
+            _starting_position,
+            _width,
+            _color
+        )
+    );
+}
+
+
+void LightDevice::startBlinkAnimation(
+    const CRGB &_color,
+    int _on_period,
+    int _off_period,
+    int _n_blinks
+) {
+    addAnimation(
+        std::make_shared<anim::BlinkAnimation>(
+            frame_buffer.size(),
+            _color,
+            _on_period,
+            _off_period,
+            _n_blinks
         )
     );
 }

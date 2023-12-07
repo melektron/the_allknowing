@@ -12,6 +12,7 @@ import pydantic
 import traceback
 
 from .devices import *
+from .enums import Direction
 
 
 type ExpressionType = str | int | float | bool | None
@@ -88,6 +89,17 @@ class ActionSetStaticColor(BaseAction):
 
 
 class ActionBlitz(BaseAction):
+    """
+    Example:
+    ```json
+    {
+        "action": "blitz",
+        "target": "687ffc5d8634.1",
+        "duration": 20,
+        "color": "(0, 255, 0)"
+    }
+    ```
+    """
     action: typing.Literal["blitz"]
     duration: ExpressionType
     color: ExpressionType
@@ -103,13 +115,30 @@ class ActionBlitz(BaseAction):
 
 class ActionWave(BaseAction):
     action: typing.Literal["wave"]
-    duration: ExpressionType
+    position: ExpressionType
+    direction: ExpressionType
+    speed: ExpressionType
+    width: ExpressionType
+    color: ExpressionType
 
     async def _run_impl(self) -> None:
-        print(f"duration={self.eval_expr(self.duration)}")
+        print(
+            f"wave anim:\n"
+            f"\tposition={self.eval_expr(self.position)}\n"
+            f"\tdirection={self.eval_expr(self.direction)}\n"
+            f"\twidth={self.eval_expr(self.width)}\n"
+            f"\tspeed={self.eval_expr(self.speed)}\n"
+            f"\tcolor={self.eval_expr(self.color)}\n"
+        )
 
         light = self.get_light()
-        await light.animate_wave(self.eval_expr(self.duration))
+        await light.animate_wave(
+            position=self.eval_expr(self.position),
+            direction=self.eval_expr(self.direction),
+            speed=self.eval_expr(self.speed),
+            width=self.eval_expr(self.width),
+            color=self.eval_expr(self.color)
+        )
 
 
 class ActionAvoid(BaseAction):
